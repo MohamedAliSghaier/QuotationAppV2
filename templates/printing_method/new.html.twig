@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New PrintingMethod{% endblock %}
+
+{% block body %}
+    <h1>Create new PrintingMethod</h1>
+
+    {{ include('printing_method/_form.html.twig') }}
+
+    <a href="{{ path('app_printing_method_index') }}">back to list</a>
+{% endblock %}

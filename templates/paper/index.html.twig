@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paper index{% endblock %}
+
+{% block body %}
+    <h1>Paper index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Width</th>
+                <th>Height</th>
+                <th>Weight</th>
+                <th>Price_per_sheet</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for paper in papers %}
+            <tr>
+                <td>{{ paper.id }}</td>
+                <td>{{ paper.name }}</td>
+                <td>{{ paper.width }}</td>
+                <td>{{ paper.height }}</td>
+                <td>{{ paper.weight }}</td>
+                <td>{{ paper.pricePerSheet }}</td>
+                <td>
+                    <a href="{{ path('app_paper_show', {'id': paper.id}) }}">show</a>
+                    <a href="{{ path('app_paper_edit', {'id': paper.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_paper_new') }}">Create new</a>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lamination index{% endblock %}
+
+{% block body %}
+    <h1>Lamination index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for lamination in laminations %}
+            <tr>
+                <td>{{ lamination.id }}</td>
+                <td>{{ lamination.name }}</td>
+                <td>{{ lamination.price }}</td>
+                <td>
+                    <a href="{{ path('app_lamination_show', {'id': lamination.id}) }}">show</a>
+                    <a href="{{ path('app_lamination_edit', {'id': lamination.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_lamination_new') }}">Create new</a>
+{% endblock %}

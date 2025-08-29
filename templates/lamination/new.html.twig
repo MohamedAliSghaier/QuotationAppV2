@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Lamination{% endblock %}
+
+{% block body %}
+    <h1>Create new Lamination</h1>
+
+    {{ include('lamination/_form.html.twig') }}
+
+    <a href="{{ path('app_lamination_index') }}">back to list</a>
+{% endblock %}

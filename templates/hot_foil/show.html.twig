@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HotFoil{% endblock %}
+
+{% block body %}
+    <h1>HotFoil</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ hot_foil.id }}</td>
+            </tr>
+            <tr>
+                <th>Setup_cost</th>
+                <td>{{ hot_foil.setupCost }}</td>
+            </tr>
+            <tr>
+                <th>Per_quantity_multiplier</th>
+                <td>{{ hot_foil.perQuantityMultiplier }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_hot_foil_index') }}">back to list</a>
+
+    <a href="{{ path('app_hot_foil_edit', {'id': hot_foil.id}) }}">edit</a>
+
+    {{ include('hot_foil/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Corners{% endblock %}
+
+{% block body %}
+    <h1>Create new Corners</h1>
+
+    {{ include('corners/_form.html.twig') }}
+
+    <a href="{{ path('app_corners_index') }}">back to list</a>
+{% endblock %}

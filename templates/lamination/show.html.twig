@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lamination{% endblock %}
+
+{% block body %}
+    <h1>Lamination</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ lamination.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ lamination.name }}</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td>{{ lamination.price }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_lamination_index') }}">back to list</a>
+
+    <a href="{{ path('app_lamination_edit', {'id': lamination.id}) }}">edit</a>
+
+    {{ include('lamination/_delete_form.html.twig') }}
+{% endblock %}

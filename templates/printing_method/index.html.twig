@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PrintingMethod index{% endblock %}
+
+{% block body %}
+    <h1>PrintingMethod index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Setup_cost</th>
+                <th>Per_color_multiplier</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for printing_method in printing_methods %}
+            <tr>
+                <td>{{ printing_method.id }}</td>
+                <td>{{ printing_method.name }}</td>
+                <td>{{ printing_method.setupCost }}</td>
+                <td>{{ printing_method.perColorMultiplier }}</td>
+                <td>
+                    <a href="{{ path('app_printing_method_show', {'id': printing_method.id}) }}">show</a>
+                    <a href="{{ path('app_printing_method_edit', {'id': printing_method.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_printing_method_new') }}">Create new</a>
+{% endblock %}

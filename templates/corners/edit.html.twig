@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Corners{% endblock %}
+
+{% block body %}
+    <h1>Edit Corners</h1>
+
+    {{ include('corners/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_corners_index') }}">back to list</a>
+
+    {{ include('corners/_delete_form.html.twig') }}
+{% endblock %}

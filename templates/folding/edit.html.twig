@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Folding{% endblock %}
+
+{% block body %}
+    <h1>Edit Folding</h1>
+
+    {{ include('folding/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_folding_index') }}">back to list</a>
+
+    {{ include('folding/_delete_form.html.twig') }}
+{% endblock %}
