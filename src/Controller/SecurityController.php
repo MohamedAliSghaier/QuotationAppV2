@@ -12,6 +12,11 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+
+        // If user is already logged in, redirect them
+        if ($this->getUser()) {
+            return $this->redirectToRoute('login_redirect');
+        }
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
 
@@ -28,5 +33,15 @@ class SecurityController extends AbstractController
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+    }
+
+    #[Route(path: '/login-redirect' , name: 'login-redirect')]
+    public function loginRedirect(): Response
+    {
+        if($this->isGranted('ROLE_ADMIN')){
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        return $this->redirectToRoute('quotation_page');
     }
 }
