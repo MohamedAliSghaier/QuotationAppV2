@@ -9,12 +9,21 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <h1>Admin Dashboard</h1>
+    <p>Welcome back, <strong>{{ app.user.email }}</strong>!</p>
 
     This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/dalis/quotation_app_v2/src/Controller/AdminController.php</code></li>
-        <li>Your template at <code>C:/Users/dalis/quotation_app_v2/templates/admin/index.html.twig</code></li>
-    </ul>
+    <div class="container mt-4">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Papers</h5>
+                    <a href="{{ path('app_paper_index') }}" class="btn btn-primary">Manage Papers</a>
+                </div>
+            </div>
+        </div>
+    <div class="mb-3">
+                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+    </div>
 </div>
 {% endblock %}

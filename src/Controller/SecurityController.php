@@ -15,7 +15,7 @@ class SecurityController extends AbstractController
 
         // If user is already logged in, redirect them
         if ($this->getUser()) {
-            return $this->redirectToRoute('login_redirect');
+            return $this->redirectToRoute('login-redirect');
         }
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
@@ -42,6 +42,6 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('admin_dashboard');
         }
 
-        return $this->redirectToRoute('quotation_page');
+        return $this->redirectToRoute('quotation_index');
     }
 }
