@@ -18,10 +18,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class QuotationController extends AbstractController
 {
     #[Route('/', name: 'quotation_index')]
-    public function index(): Response
+    public function index(QuotationRepository $quotationRepository): Response
     {
+        // Show only quotations created by the current user
+        $user = $this->getUser();
+        $quotations = $quotationRepository->findBy(['user' => $user], ['createdAt' => 'DESC']);
+        
         return $this->render('quotation/index.html.twig', [
-            'controller_name' => 'QuotationController',
+            'quotations' => $quotations,
         ]);
     }
 }

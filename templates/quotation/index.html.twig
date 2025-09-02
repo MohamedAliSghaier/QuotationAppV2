@@ -1,23 +1,74 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello QuotationController!{% endblock %}
+{% block title %}My Quotations{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/dalis/quotation_app_v2/src/Controller/QuotationController.php</code></li>
-        <li>Your template at <code>C:/Users/dalis/quotation_app_v2/templates/quotation/index.html.twig</code></li>
-    </ul>
-     <div class="mb-3">
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Quotations</h1>
+       {# <a href="{{ path('') }}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Create New Quotation
+        </a>#}
     </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% if quotations|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Client Name</th>
+                        <th>Width</th>
+                        <th>Height</th>
+                        <th>Paper</th>
+                        <th>Printing Method</th>
+                        <th>Quantity</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quotation in quotations %}
+                        <tr>
+                            <td>{{ quotation.id }}</td>
+                            <td>{{ quotation.clientName }}</td>
+                            <td>{{ quotation.width }}</td>
+                            <td>{{ quotation.height }}</td>
+                            <td>{{ quotation.paper.name }}</td>
+                            <td>{{ quotation.printingMethod.name }}</td>
+                            <td>{{ quotation.quantity }}</td>
+                            <td>${{ quotation.totalPrice }}</td>
+                            <td>
+                                <span class="badge bg-{{ quotation.status == 'draft' ? 'warning' : 'success' }}">
+                                    {{ quotation.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ quotation.createdAt|date('Y-m-d H:i') }}</td>
+                            <td>
+                                {#<a href="{{ path('quotation_show', {'id': quotation.id}) }}" #}
+                                   class="btn btn-sm btn-outline-info">View</a>
+                                {#<a href="{{ path('quotation_edit', {'id': quotation.id}) }}" #}
+                                   class="btn btn-sm btn-outline-warning">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h4>No quotations yet</h4>
+           {# <p>You haven't created any quotations yet. <a href="{{ path('quotation_new') }}">Create your first one!</a></p> #}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
