@@ -44,23 +44,24 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
 
     // 2. Call your optimized cutting function
     [$bestCut, $totalProducts] = $this->calculateOptimizedCut($quotation);
-    [$sheetsNedded , $totalPaperCost] = $this->calculateOffsetPaperPrice($quotation);
+    [$sheetsNeeded , $totalPaperCost] = $this->calculateOffsetPaperPrice($quotation);
+    [$bestProducts , $bestOrientation] = $this->calculateNumericPaperLayout($quotation);
 
     // 3. Display the results
     return new Response("
-            Best Cut:<br>
-            Cut Width: {$bestCut[0]}<br>
-            Cut Height: {$bestCut[1]}<br>
-            Actual Cut Width: {$bestCut[2]}<br>
-            Actual Cut Height: {$bestCut[3]}<br>
-            Orientation : {$bestCut[4]}<br>
-            Product Width: {$bestCut[5]}<br>
-            Product Height: {$bestCut[6]}<br>
-            Total Products: $totalProducts<br>
-             Paper Width: " . $quotation->getPaper()->getWidth() . "<br>
-    Paper Height: " . $quotation->getPaper()->getHeight() . " <br>
-    Total Sheets Needed: $sheetsNedded <br>
-    Total Paper Cost: $totalPaperCost <br>
+            cutWidthWithMargins: {$bestCut[0]}<br>
+           cutHeightWithMargins: {$bestCut[1]}<br>
+           actualCutWidth: {$bestCut[2]}<br>
+           actualCutHeight: {$bestCut[3]}<br>
+           cutOrientation: {$bestCut[4]}<br>
+           productWidth: {$bestCut[5]}<br>
+           productHeight: {$bestCut[6]}<br>
+            totalProducts: $totalProducts<br>
+            SheetsNeeded : $sheetsNeeded<br>
+            totalPaperCost : $totalPaperCost
+
+            
+
         ");
 }
 
@@ -74,8 +75,8 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
         $bestCutArea = 0;
 
 
-        for ($cutWidth = $quotation->getWidth() ; $cutWidth <= $this->gtoMaxWidth ; $cutWidth++){
-            for ($cutHeight = $quotation->getHeight() ; $cutHeight <= $this->gtoMaxHeight ; $cutHeight++ )
+       for ($cutWidth = min($quotation->getWidth(), $quotation->getHeight()); $cutWidth <= $this->gtoMaxWidth - 2; $cutWidth++) {
+    for ($cutHeight = min($quotation->getWidth(), $quotation->getHeight()); $cutHeight <= $this->gtoMaxHeight - 2; $cutHeight++) 
             {
                 $cutWidthWithMargins = $cutWidth + 2;
                 $cutHeightWithMargins = $cutHeight + 2;
@@ -95,11 +96,9 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
                         $bFitsGTO = ($cutHeightWithMargins <= $this->gtoMaxWidth && $cutWidthWithMargins <= $this->gtoMaxHeight);
                 
                 // Skip if NEITHER orientation fits
-                     if (!$aFitsGTO && !$bFitsGTO) {
-                    continue;
-                    }
+                    
 
-                 if ($aFitsGTO && $bFitsGTO) {
+              
                     
                     if ($cuttingOptionA >= $cuttingOptionB) {
                         $cutsFromSheet = $cuttingOptionA;
@@ -113,19 +112,7 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
                         $cutOrientation = 'rotated';  // 21×30 instead
                     }
                     
-                } elseif ($aFitsGTO) {
-                    // Only A fits
-                    $cutsFromSheet = $cuttingOptionA;
-                    $actualCutWidth = $cutWidthWithMargins;
-                    $actualCutHeight = $cutHeightWithMargins;
-                    $cutOrientation = 'original';
-                } else {
-                    // Only B fits
-                    $cutsFromSheet = $cuttingOptionB;
-                    $actualCutWidth = $cutHeightWithMargins;
-                    $actualCutHeight = $cutWidthWithMargins;
-                    $cutOrientation = 'rotated';
-                }
+              
                        
 
                            if ($cutOrientation === 'original') {
@@ -163,45 +150,14 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
             }
         }
         return [$bestCut , $bestProducts];
-       /* $basePrice = 0;
-        
-        // Required items (always exist)
-        $basePrice += (float) $quotation->getPaper()->getPrice();
-        $basePrice += (float) $quotation->getPrintingMethod()->getPrice();
-        
-        // Optional items (only if selected)
-        if ($quotation->getLamination()) {
-            $basePrice += (float) $quotation->getLamination()->getPrice();
-        }
-        if ($quotation->getCorners()) {
-            $basePrice += (float) $quotation->getCorners()->getPrice();
-        }
-        if ($quotation->getFolding()) {
-            $basePrice += (float) $quotation->getFolding()->getPrice();
-        }
-        if ($quotation->getHotFoil()) {
-            $basePrice += (float) $quotation->getHotFoil()->getPrice();
-        }
-        
-        // Multiply by quantity
-        $totalPrice = $basePrice * $quotation->getQuantity();
-        
-        // Add your custom logic here:
-        // - Volume discounts
-        // - Special pricing rules
-        // - Additional fees
-        // - Minimum order amounts
-        // Example:
-        if ($quotation->getQuantity() > 100) {
-            $totalPrice *= 0.9; // 10% discount for large orders
-        }
-        
-        return number_format($totalPrice, 2, '.', '');*/
     }
 
     private function calculateOffsetPaperPrice(Quotation $quotation): array
     {
             [, $productsPerLargeSheet] = $this->calculateOptimizedCut($quotation);
+            if ($productsPerLargeSheet === 0) {
+            throw new \RuntimeException("No valid cutting layout for this quotation (ID {$quotation->getId()}).");
+               }
             $sheetsNeeded = ceil($quotation->getQuantity() / $productsPerLargeSheet);
             $totalPaperCost = $sheetsNeeded * $quotation->getPaper()->getPricePerSheet();
             return[$sheetsNeeded , $totalPaperCost];
@@ -210,11 +166,16 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
     private function calculateNumericPaperLayout(Quotation $quotation): array
     {    
           $bestProducts = 0;
+          $bestOrientation = 'original';
           $usablePaperWidth = $quotation->getPaper()->getWidth() - 2 ;
           $usablePaperHeight = $quotation->getPaper()->getHeight() - 2 ;
           foreach([[$quotation->getWidth(),$quotation->getHeight()] , [$quotation->getHeight(),$quotation->getWidth()]] as $index => [$productWidth , $productHeight]){
 
+             if ($productWidth <= $usablePaperWidth && $productHeight <= $usablePaperHeight ) {
+
+
               $totalProducts = intdiv($usablePaperWidth, $productWidth) * intdiv($usablePaperHeight, $productHeight);
+             
              
 
               if ($totalProducts > $bestProducts)
@@ -224,11 +185,13 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
                  
 
                }
-
+              }
              }
+
+            
              return [
-                'products_per_sheet' => $bestProducts,
-                'orientation_details' => $bestOrientation
+                 $bestProducts,
+                $bestOrientation
              ];
 
     }
