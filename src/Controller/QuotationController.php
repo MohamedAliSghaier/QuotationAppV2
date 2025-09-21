@@ -4,6 +4,7 @@ namespace App\Controller;
 
 
 use App\Entity\Quotation;
+use App\Entity\Paper;
 use App\Form\QuotationType;
 use App\Repository\QuotationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,8 +18,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]  // Only logged-in users can access
 final class QuotationController extends AbstractController
 {
-    private int $gtoMaxWidth = 52; // store as number
-    private int $gtoMaxHeight = 36; // store as number
+   // private int $gtoMaxWidth = 52; // store as number
+    //private int $gtoMaxHeight = 36; // store as number
 
     #[Route('/', name: 'quotation_index')]
     public function index(QuotationRepository $quotationRepository): Response
@@ -31,6 +32,44 @@ final class QuotationController extends AbstractController
             'quotations' => $quotations,
         ]);
     }
+
+#[Route('/calculate', name: 'quotation_calculate', methods: ['GET', 'POST'])]
+public function calculate(Request $request): Response
+{
+    $quotation = new Quotation(); 
+    $form = $this->createForm(QuotationType::class, $quotation);
+    $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
+    $data = $form->getData(); // this is a Quotation entity
+     [$bestCut, $bestProducts] = $this->calculateOptimizedCut(
+        $data->getWidth(),
+        $data->getHeight(),
+        $data->getPaper(),
+        52,
+        36
+    );
+
+
+  $request->getSession()->set('calculation_results', [
+            'bestCut' => $bestCut,
+            'bestProducts' => $bestProducts
+        ]);
+     
+        // REQUIRED: Redirect after POST for Turbo
+        return $this->redirectToRoute('quotation_calculate');
+
+    }
+ $results = $request->getSession()->get('calculation_results');
+     $request->getSession()->remove('calculation_results');
+
+    return $this->render('quotation/form.html.twig', [
+        'form' => $form->createView(),
+        'bestCut' => $results['bestCut'] ?? null,
+        'bestProducts' => $results['bestProducts'] ?? null,
+    ]);
+}
+
+
 
     #[Route('/{quotationId}', name: 'test_cut_existing_quotation')]
 public function testExistingQuotation(int $quotationId, EntityManagerInterface $em): Response
@@ -66,34 +105,37 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
 }
 
 
+
+
+
     
 
-    private function calculateOptimizedCut(Quotation $quotation): array
+    private function calculateOptimizedCut(float $productWidth , float $productHeight  , Paper $paper , int $gtoMaxWdith = 52 , int $gtoMaxHeight = 36): array
     {
         $bestCut=null;
         $bestProducts = 0;
         $bestCutArea = 0;
 
 
-       for ($cutWidth = min($quotation->getWidth(), $quotation->getHeight()); $cutWidth <= $this->gtoMaxWidth - 2; $cutWidth++) {
-    for ($cutHeight = min($quotation->getWidth(), $quotation->getHeight()); $cutHeight <= $this->gtoMaxHeight - 2; $cutHeight++) 
+       for ($cutWidth = min($productWidth, $productHeight); $cutWidth <= $gtoMaxWdith - 2; $cutWidth++) {
+    for ($cutHeight = min($productWidth, $productHeight); $cutHeight <= $gtoMaxHeight - 2; $cutHeight++) 
             {
                 $cutWidthWithMargins = $cutWidth + 2;
                 $cutHeightWithMargins = $cutHeight + 2;
                
-                foreach([[$quotation->getWidth(),$quotation->getHeight()] , [$quotation->getHeight(),$quotation->getWidth()]] as [$productWidth , $productHeight]){
+                foreach([[$productWidth,$productHeight] , [$productHeight,$productWidth]] as [$productWidth , $productHeight]){
 
                     if ($productWidth <= $cutWidth && $productHeight <= $cutHeight ) {
 
                       // Add 2cm (1cm each side)
 
 
-                        $cuttingOptionA = intdiv($quotation->getPaper()->getWidth(), $cutWidthWithMargins) * intdiv($quotation->getPaper()->getHeight(), $cutHeightWithMargins);
+                        $cuttingOptionA = intdiv($paper->getWidth(), $cutWidthWithMargins) * intdiv($paper->getHeight(), $cutHeightWithMargins);
                     
-                        $cuttingOptionB = intdiv($quotation->getPaper()->getWidth(), $cutHeightWithMargins) * intdiv($quotation->getPaper()->getHeight(), $cutWidthWithMargins);
+                        $cuttingOptionB = intdiv($paper->getWidth(), $cutHeightWithMargins) * intdiv($paper->getHeight(), $cutWidthWithMargins);
 
-                        $aFitsGTO = ($cutWidthWithMargins <= $this->gtoMaxWidth && $cutHeightWithMargins <= $this->gtoMaxHeight);
-                        $bFitsGTO = ($cutHeightWithMargins <= $this->gtoMaxWidth && $cutWidthWithMargins <= $this->gtoMaxHeight);
+                       // $aFitsGTO = ($cutWidthWithMargins <= $gtoMaxWidth && $cutHeightWithMargins <= $gtoMaxHeight);
+                      //  $bFitsGTO = ($cutHeightWithMargins <= $gtoMaxWidth && $cutWidthWithMargins <= $gtoMaxHeight);
                 
                 // Skip if NEITHER orientation fits
                     
@@ -152,9 +194,9 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
         return [$bestCut , $bestProducts];
     }
 
-    private function calculateOffsetPaperPrice(Quotation $quotation): array
+    private function calculateOffsetPaperPrice(float $productWidth , float $productHeight , int $quantity , Paper $paper , int $gtoMaxWdith = 52 , int $gtoMaxHeight = 36): array
     {
-            [, $productsPerLargeSheet] = $this->calculateOptimizedCut($quotation);
+            [, $productsPerLargeSheet] = $this->calculateOptimizedCut($productWidth , $productHeight  , $paper , $gtoMaxWidth , $gtoMaxHeight);
             if ($productsPerLargeSheet === 0) {
             throw new \RuntimeException("No valid cutting layout for this quotation (ID {$quotation->getId()}).");
                }
@@ -195,4 +237,15 @@ public function testExistingQuotation(int $quotationId, EntityManagerInterface $
              ];
 
     }
+        private function calculateNumericPaperPrice(Quotation $quotation): array
+    {
+            [,$productsPerNumericSheet] = $this->calculateNumericPaperLayout($quotation);
+            if ($$productsPerNumericSheet === 0) {
+            throw new \RuntimeException("No valid cutting layout for this quotation (ID {$quotation->getId()}).");
+               }
+            $sheetsNeeded = ceil($quotation->getQuantity() / $productsPerNumericSheet);
+            $totalPaperCost = $sheetsNeeded * $quotation->getPaper()->getPricePerSheet();
+            return[$sheetsNeeded , $totalPaperCost];
+    }
+
 }

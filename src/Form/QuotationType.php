@@ -12,6 +12,7 @@ use App\Entity\Quotation;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -25,11 +26,11 @@ class QuotationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('clientName', TextType::class, [
+          /*  ->add('clientName', TextType::class, [
                 'label' => 'Client Name *',
                 'required' => true,
                 'attr' => ['class' => 'form-control'],
-            ])
+            ])*/
 
             ->add('width', NumberType::class, [
             'label' => 'Width *',
@@ -57,14 +58,14 @@ class QuotationType extends AbstractType
             ->add('paper', EntityType::class, [
                 'class' => Paper::class,
                 'choice_label' => function(Paper $paper) {
-                    return $paper->getName() . ' - $' . $paper->getPrice();
+                    return $paper->getName() . ' - $' . $paper->getPricePerSheet();
                 },
                 'placeholder' => 'Choose a paper type *',
                 'required' => true,
                 'attr' => ['class' => 'form-select'],
             ])
 
-            ->add('printingMethod', EntityType::class, [
+        /*    ->add('printingMethod', EntityType::class, [
                 'class' => PrintingMethod::class,
                 'choice_label' => function(PrintingMethod $method) {
                     return $method->getName() . ' - $' . $method->getSetupCost();
@@ -131,7 +132,7 @@ class QuotationType extends AbstractType
                     'rows' => 3,
                     'placeholder' => 'Any special requirements or notes...'
                 ],
-            ])
+            ])*/
 
             ->add('submit', SubmitType::class, [
                 'label' => 'Create Quotation',
