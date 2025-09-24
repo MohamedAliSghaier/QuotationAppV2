@@ -3,9 +3,13 @@
 namespace App\Form;
 
 use App\Entity\Paper;
+use App\Entity\PrintingMethod;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+
+
 
 class PaperType extends AbstractType
 {
@@ -17,6 +21,11 @@ class PaperType extends AbstractType
             ->add('height')
             ->add('weight')
             ->add('price_per_sheet')
+            ->add('printingMethod', EntityType::class, [
+                'class' => PrintingMethod::class,
+                'choice_label' => 'name', // the field shown in the dropdown
+                'placeholder' => 'Select a printing method',
+            ])
         ;
     }
 

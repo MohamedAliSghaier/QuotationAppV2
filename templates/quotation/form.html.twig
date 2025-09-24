@@ -7,6 +7,7 @@
 
 {{ form_start(form) }}
 
+    {{ form_row(form.printingMethod) }}
     {{ form_row(form.width) }}
     {{ form_row(form.height) }}
     {{ form_row(form.paper) }}
@@ -37,6 +38,45 @@
     <li><strong>Total Products:</strong> {{ bestProducts }}</li>
 </ul>
 {% endif %}
+
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const printingMethodSelect = document.getElementById('printing-method-select');
+    const paperSelect = document.getElementById('paper-select');
+    
+    printingMethodSelect.addEventListener('change', function() {
+        const methodId = this.value;
+        // Clear paper options
+        paperSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        if (methodId) {
+            // Fetch papers for this printing method
+            fetch(`/api/papers-by-method/${methodId}`)
+                .then(response => response.json())
+                .then(papers => {
+                    // Clear and rebuild paper options
+                    paperSelect.innerHTML = '<option value="">Select Paper</option>';
+                    
+                    papers.forEach(paper => {
+                        const option = document.createElement('option');
+                        option.value = paper.id;
+                        option.textContent = `${paper.name} (${paper.width}×${paper.height}cm)`;
+                        paperSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching papers:', error);
+                    paperSelect.innerHTML = '<option value="">Error loading papers</option>';
+                });
+        } else {
+            paperSelect.innerHTML = '<option value="">Select printing method first</option>';
+        }
+    });
+});
+</script>
+{% endblock %}
 
 
 {% endblock %}

@@ -57,26 +57,23 @@ class QuotationType extends AbstractType
         
             ->add('paper', EntityType::class, [
                 'class' => Paper::class,
-                'choice_label' => function(Paper $paper) {
-                    return $paper->getName() . ' - $' . $paper->getPricePerSheet();
-                },
+                'choice_label' => 'name',
                 'placeholder' => 'Choose a paper type *',
                 'required' => true,
-                'attr' => ['class' => 'form-select'],
+                'choices' => [], // Empty initially
+                'attr' => ['id' => 'paper-select' , 'class' => 'form-select'],
             ])
 
-        /*    ->add('printingMethod', EntityType::class, [
+            ->add('printingMethod', EntityType::class, [
                 'class' => PrintingMethod::class,
-                'choice_label' => function(PrintingMethod $method) {
-                    return $method->getName() . ' - $' . $method->getSetupCost();
-                },
+                'choice_label' => 'name',
                 'placeholder' => 'Choose printing method *',
                 'required' => true,
-                'attr' => ['class' => 'form-select'],
+                'attr' => ['id' => 'printing-method-select' , 'class' => 'form-select'],
             ])
 
             
-            ->add('quantity', IntegerType::class, [
+          /*  ->add('quantity', IntegerType::class, [
                 'label' => 'Quantity *',
                 'required' => true,
                 'attr' => [

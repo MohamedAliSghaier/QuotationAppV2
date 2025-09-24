@@ -28,6 +28,10 @@ class Paper
     #[ORM\Column]
     private ?float $price_per_sheet = null;
 
+    #[ORM\ManyToOne(inversedBy: 'papers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?PrintingMethod $printingMethod = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +93,18 @@ class Paper
     public function setPricePerSheet(float $price_per_sheet): static
     {
         $this->price_per_sheet = $price_per_sheet;
+
+        return $this;
+    }
+
+    public function getPrintingMethod(): ?PrintingMethod
+    {
+        return $this->printingMethod;
+    }
+
+    public function setPrintingMethod(?PrintingMethod $printingMethod): static
+    {
+        $this->printingMethod = $printingMethod;
 
         return $this;
     }
